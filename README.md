@@ -111,7 +111,9 @@ Two exams turned out to be ambiguous. I corrected the exams and re-ran them, rat
 
 ## Demo
 
-🎬 **[Orchestrator demo](demo/video/orquestador-demo-0.8.0.mp4)**: plan → specialists → aggregated result → refusal to accept a risk without the required data.
+🎬 **Orchestrator demo (55 s)**: plan → human sign-off → refusal to accept a risk without the required data.
+
+<!-- VIDEO: drag the short demo video here -->
 
 The three screens evaluated (seeded with problems, correct, justified security) are in [`demo/`](demo), with [screenshots](demo/capturas).
 
@@ -121,7 +123,7 @@ The three screens evaluated (seeded with problems, correct, justified security) 
 |---|---|
 | `plugins/design-team/` | Agents and skills (public edition) |
 | `docs/` | Method: the full rules behind the agents |
-| `demo/` | Banco Lumen screens, challenge, answer keys, video and screenshots |
+| `demo/` | Banco Lumen screens, challenge, answer keys and screenshots |
 | `evidence/v0.8.0/` | Unedited reports from the validation runs |
 | `notebooks/` | Working notebooks: decisions, iterations and lessons (Spanish) |
 | `evals/` | Sandboxed exam script and trace reader |

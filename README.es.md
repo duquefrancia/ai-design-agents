@@ -111,7 +111,9 @@ Dos exámenes resultaron ambiguos. Corregí los exámenes y los repetí, en luga
 
 ## Demo
 
-🎬 **[Demo del orquestador](demo/video/orquestador-demo-0.8.0.mp4)**: plan → especialistas → resultado agregado → rechazo a aceptar un riesgo sin los datos necesarios.
+🎬 **Demo del orquestador (55 s)**: plan → firma humana → rechazo a aceptar un riesgo sin los datos necesarios.
+
+<!-- VIDEO: arrastra aquí el vídeo corto de la demo -->
 
 Las tres pantallas evaluadas (con problemas sembrados, correcta y con seguridad justificada) están en [`demo/`](demo), con sus [capturas](demo/capturas).
 
@@ -121,7 +123,7 @@ Las tres pantallas evaluadas (con problemas sembrados, correcta y con seguridad 
 |---|---|
 | `plugins/design-team/` | Agentes y skills (edición pública) |
 | `docs/` | Método: todas las reglas detrás de los agentes |
-| `demo/` | Pantallas de Banco Lumen, reto, hojas de respuestas, vídeo y capturas |
+| `demo/` | Pantallas de Banco Lumen, reto, hojas de respuestas y capturas |
 | `evidence/v0.8.0/` | Informes sin editar de las pruebas de validación |
 | `notebooks/` | Cuadernos de trabajo: decisiones, iteraciones y aprendizajes |
 | `evals/` | Script del examen en aula aislada y lector de trazas |
