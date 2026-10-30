@@ -113,7 +113,7 @@ Dos exámenes resultaron ambiguos. Corregí los exámenes y los repetí, en luga
 
 🎬 **Demo del orquestador (55 s)**: plan → firma humana → rechazo a aceptar un riesgo sin los datos necesarios.
 
-<!-- VIDEO: arrastra aquí el vídeo corto de la demo -->
+https://github.com/user-attachments/assets/11aee6d2-32cf-4f9b-b94d-342bb9d33268
 
 Las tres pantallas evaluadas (con problemas sembrados, correcta y con seguridad justificada) están en [`demo/`](demo), con sus [capturas](demo/capturas).
 
