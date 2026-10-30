@@ -152,4 +152,4 @@ Después, por ejemplo: `Revisa la accesibilidad de demo/pantalla-firma.html` o `
 
 ## Licencia
 
-© 2026 Francia. **Todos los derechos reservados.** Puedes ver y evaluar este trabajo. Reproducirlo, modificarlo, redistribuirlo o reutilizarlo, también para entrenar modelos de IA, requiere permiso por escrito. Ver [LICENSE](LICENSE).
+© 2026 Francia D La Rosa. **Todos los derechos reservados.** Puedes ver y evaluar este trabajo. Reproducirlo, modificarlo, redistribuirlo o reutilizarlo, también para entrenar modelos de IA, requiere permiso por escrito. Ver [LICENSE](LICENSE).

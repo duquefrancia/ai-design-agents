@@ -154,4 +154,4 @@ Then, for example: `Revisa la accesibilidad de demo/pantalla-firma.html` or `Haz
 
 ## License
 
-© 2026 Francia. **All rights reserved.** You may view and evaluate this work. Reproduction, modification, redistribution or reuse, including for training AI models, requires written permission. See [LICENSE](LICENSE).
+© 2026 Francia D La Rosa. **All rights reserved.** You may view and evaluate this work. Reproduction, modification, redistribution or reuse, including for training AI models, requires written permission. See [LICENSE](LICENSE).
