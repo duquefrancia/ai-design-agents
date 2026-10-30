@@ -1,0 +1,579 @@
+<title>Cuaderno del agente de heurísticas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: mismo cuaderno que el de accesibilidad (una columna de 760px con índice lateral), para que los dos se lean como una serie. Esquemas en HTML/CSS. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#17202b; --muted:#4f5b69; --line:#d7dde4;
+  --accent:#0b3d6e; --accent-soft:#e3ecf6;
+  --ok:#1f6b3f; --ok-soft:#e5f3ea; --warn:#8a5a00; --warn-soft:#fbf0d9; --bad:#a3231c; --bad-soft:#f9e4e2;
+  --sev4:#a3231c; --sev3:#c2410c; --sev2:#8a5a00; --sev1:#4f5b69; --sev0:#1f6b3f;
+  --f-display:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10161d; --surface:#18212b; --fg:#e8edf2; --muted:#a3b0bd; --line:#2c3846;
+  --accent:#8cb8e6; --accent-soft:#1c2c3d;
+  --ok:#7fd1a0; --ok-soft:#163023; --warn:#e9c46a; --warn-soft:#332810; --bad:#f19a92; --bad-soft:#3a1b19;
+  --sev4:#f19a92; --sev3:#f4a66b; --sev2:#e9c46a; --sev1:#a3b0bd; --sev0:#7fd1a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161d; --surface:#18212b; --fg:#e8edf2; --muted:#a3b0bd; --line:#2c3846;
+  --accent:#8cb8e6; --accent-soft:#1c2c3d;
+  --ok:#7fd1a0; --ok-soft:#163023; --warn:#e9c46a; --warn-soft:#332810; --bad:#f19a92; --bad-soft:#3a1b19;
+  --sev4:#f19a92; --sev3:#f4a66b; --sev2:#e9c46a; --sev1:#a3b0bd; --sev0:#7fd1a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px}
+nav p{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+nav ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+nav a{color:var(--muted);text-decoration:none}
+nav a:hover,nav a:focus-visible{color:var(--accent);text-decoration:underline}
+main{min-width:0;max-width:760px}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:26px;font-weight:800;margin-bottom:8px}
+h3{font-size:18px;font-weight:600;margin:24px 0 8px}
+p{margin:0 0 12px}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.lead{font-size:18px;color:var(--muted);max-width:62ch}
+header.top{padding-bottom:28px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:16px;font-size:14px;color:var(--muted)}
+section{padding-block:36px;border-bottom:1px solid var(--line);scroll-margin-top:16px}
+section > .intro{color:var(--muted);max-width:62ch}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.tbl{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--bg)}
+.num{font-variant-numeric:tabular-nums}
+
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.score div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.score b{display:block;font:800 30px/1.1 var(--f-display);color:var(--accent)}
+.score span{font-size:14px;color:var(--muted)}
+
+.anat{margin-top:20px;display:grid;gap:10px}
+.box{border:2px solid var(--accent);border-radius:10px;padding:14px;background:var(--surface)}
+.box .lbl{font:600 13px/1.3 var(--f-mono);color:var(--accent)}
+.box .lbl small{display:block;font:400 13px/1.4 var(--f-body);color:var(--muted);margin-top:2px}
+.box .inner{display:grid;gap:10px;margin-top:12px}
+.box.l2{border-color:var(--line);border-width:1px}
+.box.l3{border-style:dashed;border-color:var(--line)}
+.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.file{background:var(--bg);border-radius:6px;padding:8px 10px;font-size:13px}
+.file b{font:500 13px var(--f-mono);display:block;color:var(--fg)}
+.side{display:flex;flex-wrap:wrap;gap:10px}
+.side .box{flex:1 1 220px}
+
+.steps{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;position:relative;padding-bottom:18px}
+.steps li::before{content:"";position:absolute;left:21px;top:40px;bottom:0;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps .n{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--surface);display:grid;place-items:center;font:800 18px var(--f-display)}
+.steps h3{margin:8px 0 4px}
+.steps p{color:var(--muted);margin:0}
+.loop{margin-top:6px;display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--accent);font-weight:600}
+.steps li.new .n{background:var(--ok)}
+
+/* Capas independientes */
+.layers{display:grid;gap:8px;margin-top:16px}
+.layers div{display:grid;grid-template-columns:170px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.layers b{font-family:var(--f-display);font-size:16px}
+.layers span{color:var(--muted);font-size:15px}
+.layers .q{font-style:italic;color:var(--fg)}
+
+.sev{display:grid;gap:8px;margin-top:16px}
+.sev div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:6px;padding:12px 14px}
+.sev b{color:var(--c)}
+.sev small{display:block;color:var(--muted);font-size:14px}
+
+.evid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.evid div{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:8px;padding:12px}
+.evid b{display:block;font-family:var(--f-display);font-size:16px;margin-bottom:4px}
+.evid p{font-size:14px;color:var(--muted);margin:0}
+.evid em{display:block;font-style:normal;font-size:13px;font-weight:600;color:var(--c);margin-top:8px}
+
+.tree{margin-top:20px;display:grid;gap:0}
+.q2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.q2 .ask{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-weight:600}
+.q2 .yes{border-radius:8px;padding:12px 14px;font-size:15px}
+.q2 .yes b{display:block;font-family:var(--f-display);font-size:17px}
+.arrow{padding:4px 0 4px 24px;color:var(--muted);font-size:13px}
+.v-bad{background:var(--bad-soft);color:var(--bad)}
+.v-warn{background:var(--warn-soft);color:var(--warn)}
+.v-ok{background:var(--ok-soft);color:var(--ok)}
+.v-yes-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+
+.note{background:var(--accent-soft);border-radius:8px;padding:14px 16px;margin:16px 0}
+.note b:first-child{color:var(--accent)}
+.analogy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.analogy div{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--surface)}
+.analogy .bad{border-color:var(--bad)}
+.analogy .good{border-color:var(--ok)}
+.analogy h3{margin:0 0 6px;font-size:16px}
+
+.pill{display:inline-block;font:600 12px/1 var(--f-body);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+
+/* Rondas */
+.rounds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.rounds div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.rounds .r{font:500 13px var(--f-mono);color:var(--accent)}
+.rounds b{display:block;font-family:var(--f-display);font-size:16px;margin:4px 0}
+.rounds p{font-size:14px;color:var(--muted);margin:0 0 8px}
+.rounds .final{border:2px solid var(--ok)}
+
+/* Imágenes de las evaluaciones */
+.eval{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start;margin-top:20px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.eval figure,.shot{margin:0}
+.eval img{display:block;width:100%;border:1px solid var(--line);border-radius:8px}
+.eval h3{margin:0 0 6px}
+.eval .verdict{display:inline-block;font:600 14px/1.3 var(--f-body);padding:6px 10px;border-radius:6px;margin-bottom:8px}
+.eval p{font-size:15px;color:var(--muted)}
+.sem{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.sem span{display:block;text-align:center;font:500 13px/1.3 var(--f-mono);padding:6px 2px;border-radius:6px;background:var(--bg);border-top:3px solid var(--c)}
+.sem small{display:block;font:600 11px var(--f-body);color:var(--muted)}
+.marks{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start;margin-top:16px}
+.marks img{display:block;width:100%;border:1px solid var(--line);border-radius:8px}
+.marks ol{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.marks li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:15px}
+.marks .dot{width:24px;height:24px;border-radius:50%;background:#d6336c;color:#fff;font:700 13px/24px var(--f-body);text-align:center}
+.marks small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.shot{margin-top:16px}
+.shot img{display:block;width:100%;border-radius:8px;border:1px solid var(--line)}
+figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+
+.timeline{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:12px}
+.timeline li{display:grid;grid-template-columns:92px minmax(0,1fr);gap:16px}
+.timeline .v{font:500 14px var(--f-mono);color:var(--accent);padding-top:2px}
+.timeline .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.timeline .card p{margin:4px 0 0;color:var(--muted);font-size:15px}
+.timeline .card b{font-weight:600}
+
+.star{display:grid;gap:10px;margin-top:16px}
+.star div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.star span{font:600 12px/1.6 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+
+pre.cmd{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:6px 0 14px;overflow-x:auto;font:14px/1.5 var(--f-mono)}
+ul.clean,ol.clean{padding-left:20px;margin:8px 0 12px}
+ul.clean li,ol.clean li{margin-bottom:6px}
+footer{padding-top:28px;font-size:14px;color:var(--muted)}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:16px}
+  nav{position:static;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+  nav ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rounds,.evid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .eval,.marks{grid-template-columns:minmax(0,1fr)}
+  .eval figure,.marks img{max-width:260px}
+}
+@media (max-width:560px){
+  .score,.analogy,.rounds,.evid{grid-template-columns:minmax(0,1fr)}
+  .q2{grid-template-columns:minmax(0,1fr)}
+  .sev div,.layers div{grid-template-columns:minmax(0,1fr);gap:4px}
+  .star div,.timeline li{grid-template-columns:minmax(0,1fr);gap:4px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<nav aria-label="Índice">
+  <p>En este cuaderno</p>
+  <ol>
+    <li><a href="#resumen">Resumen</a></li>
+    <li><a href="#anatomia">Cómo está hecho</a></li>
+    <li><a href="#proceso">El proceso</a></li>
+    <li><a href="#criterio">Mi criterio</a></li>
+    <li><a href="#lineas">Líneas rojas</a></li>
+    <li><a href="#dictamen">El dictamen</a></li>
+    <li><a href="#pruebas">Cómo lo probé</a></li>
+    <li><a href="#imagenes">En imágenes</a></li>
+    <li><a href="#iteraciones">Qué falló</a></li>
+    <li><a href="#version08">Versión 0.8.0</a></li>
+    <li><a href="#limites">Límites conocidos</a></li>
+    <li><a href="#aprendizajes">Aprendizajes</a></li>
+    <li><a href="#chuleta">Chuleta</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <p class="eyebrow">Notas de trabajo · Design Agents</p>
+  <h1>Cuaderno del agente de heurísticas</h1>
+  <p class="lead" style="margin-top:14px">Qué decidí, cómo lo probé y qué aprendí al crear un agente de IA que hace evaluaciones heurísticas con mi criterio de producto regulado, y al aislar sus exámenes para poder confiar en el resultado.</p>
+  <div class="meta"><span>Francia · Senior Product Designer</span><span>20–23 oct 2026</span><span>Plugin <span class="mono">design-team</span> v0.7.0 · v0.8.0 validada</span><span>Segundo agente de la serie</span></div>
+  <div class="note" style="margin-top:16px"><b>Edición pública.</b> (derivada de la versión 0.8.0). Se han retirado dos referencias de la skill que citan bancos reales y las notas internas de preparación. El criterio y los resultados no cambian.</div>
+</header>
+
+<section id="resumen">
+  <p class="eyebrow">Resumen</p>
+  <h2>En una frase</h2>
+  <p>Convertí mi forma de hacer evaluaciones heurísticas en banca en un agente con capas de decisión separadas y límites éticos que no se negocian, y lo validé en un entorno aislado con trazas que demuestran qué leyó y qué hizo.</p>
+  <div class="score">
+    <div><b class="num">6 / 6</b><span>casos de aceptación superados en aula aislada</span></div>
+    <div><b class="num">14</b><span>líneas rojas: 4 de usabilidad crítica y 10 de patrones engañosos</span></div>
+    <div><b class="num">4</b><span>rondas de prueba hasta el cierre (versiones 0.6.0 → 0.7.0)</span></div>
+  </div>
+  <div class="note"><b>Idea clave.</b> Que el agente acierte no basta. Hay que poder demostrar con qué fuentes trabajó y que no hizo nada que no se le pidió. Esa segunda parte la descubrí en las trazas, no en los informes.</div>
+</section>
+
+<section id="anatomia">
+  <p class="eyebrow">Anatomía</p>
+  <h2>Cómo está hecho el agente</h2>
+  <p class="intro">Las mismas tres capas que el de accesibilidad: plugin, agente y skill. Lo nuevo es todo lo que queda fuera del plugin para que los exámenes sean limpios.</p>
+
+  <div class="anat" role="group" aria-label="Esquema de las piezas del agente y de las pruebas">
+    <div class="box">
+      <div class="lbl">plugins/design-team/ <small>Plugin: la caja de los agentes. Versión 0.7.0.</small></div>
+      <div class="inner">
+        <div class="side">
+          <div class="box l2">
+            <div class="lbl">agents/ux-heuristics-expert.md <small>La especialista. Solo puede leer y buscar. Usa la skill de heurísticas y, como apoyo, la de Leyes de UX.</small></div>
+          </div>
+          <div class="box l2">
+            <div class="lbl">skills/evaluating-heuristics/ <small>El manual: cómo evalúo yo.</small></div>
+            <div class="files">
+              <div class="file"><b>SKILL.md</b>Método, capas, severidad, semáforo y dictamen</div>
+              <div class="file"><b>reference/heuristicas.md</b>Controles generales, por sector y de accesibilidad</div>
+              <div class="file"><b>reference/lineas-rojas.md</b>Las 14 líneas rojas</div>
+              <div class="file"><b>templates/informe.md</b>Forma fija del informe, con ejemplo</div>
+              <div class="file"><b>evals/casos.md</b>Solo las entradas de los exámenes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="box l3">
+        <div class="lbl">demo/hoja-evaluacion-heuristicas.md <small>La hoja de respuestas. Fuera del plugin: el agente nunca la recibe.</small></div>
+      </div>
+      <div class="box l3">
+        <div class="lbl">evals/examen-heuristicas.sh <small>Crea un aula temporal fuera del proyecto, lanza el examen y guarda informe, traza y verificación.</small></div>
+      </div>
+      <div class="box l3">
+        <div class="lbl">evals/archivo/heuristicas/ <small>La evidencia de cada ronda, con su índice. No son entregables aprobados.</small></div>
+      </div>
+      <div class="box l3">
+        <div class="lbl">CLAUDE.md <small>Reglas de la carpeta. Nueva: evaluar, guardar y hacer commit son acciones distintas.</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="proceso">
+  <p class="eyebrow">Proceso</p>
+  <h2>De borrador a agente validado</h2>
+  <p class="intro">El mismo método que con accesibilidad, con un paso nuevo al final: aislar los exámenes.</p>
+  <ol class="steps">
+    <li><span class="n">1</span><div><h3>Partir de un borrador</h3><p>Una skill corta con las 10 heurísticas de Nielsen y una escala 0–4.</p></div></li>
+    <li><span class="n">2</span><div><h3>Hacerla mía</h3><p>Decidí la escala, el semáforo, las líneas rojas, los dictámenes, la confianza y el riesgo. Cada decisión de criterio la tomé yo.</p></div></li>
+    <li><span class="n">3</span><div><h3>Darle referencias</h3><p>Controles por sector (banca, salud, comercio/SaaS), controles de accesibilidad y el catálogo de líneas rojas.</p></div></li>
+    <li><span class="n">4</span><div><h3>Escribir los exámenes antes de probar</h3><p>Seis casos: una pantalla con trampas, una correcta, indicios de engaño, información incompleta, seguridad bien hecha y uno en el que no debe activarse.</p></div></li>
+    <li><span class="n">5</span><div><h3>Probar y calibrar</h3><p>Cada fallo se convierte en una regla escrita y una versión nueva.</p><span class="loop">↻ hasta que todo pasa</span></div></li>
+    <li class="new"><span class="n">6</span><div><h3>Aislar y repetir</h3><p>Un aula temporal sin informes previos, sin respuestas ni git, con traza de cada lectura. Si el protocolo cambia, se repiten todos los casos.</p></div></li>
+  </ol>
+</section>
+
+<section id="criterio">
+  <p class="eyebrow">Criterio</p>
+  <h2>Capas que no se mezclan</h2>
+  <p class="intro">Cada hallazgo se describe con capas independientes. Ninguna se deduce de otra, y eso hace el informe legible para diseño, producto, ingeniería y cumplimiento.</p>
+  <div class="layers">
+    <div><b>Heurística principal</b><span><span class="q">¿Qué falla en la interacción?</span> Una de las 10 de Nielsen, elegida por el mecanismo del problema.</span></div>
+    <div><b>Línea roja</b><span><span class="q">¿Se cruza un límite inaceptable?</span> Confirmada, indicio fundado o diseño justificado.</span></div>
+    <div><b>Severidad</b><span><span class="q">¿Cuánto importa?</span> Escala Nielsen 0–4, con color, número y nombre.</span></div>
+    <div><b>Riesgo específico</b><span><span class="q">¿Qué puede verse afectado?</span> Económico, privacidad, clínico, operativo, accesibilidad, legal. Puede haber varios.</span></div>
+    <div><b>Confianza</b><span><span class="q">¿Cuánto sostiene la evidencia esta conclusión?</span> Alta, Media o Baja, siempre con justificación.</span></div>
+    <div><b>Dictamen</b><span><span class="q">¿Se puede aprobar?</span> Cuatro resultados, con alcance y recomendación.</span></div>
+  </div>
+
+  <h3>La escala de severidad</h3>
+  <div class="sev">
+    <div style="--c:var(--sev4)"><b>🔴 4 · Crítico</b><span>Impide una tarea esencial, puede tener una consecuencia grave o difícil de revertir, o introduce un riesgo inaceptable inmediato.</span></div>
+    <div style="--c:var(--sev3)"><b>🟠 3 · Mayor</b><span>La tarea se completa con mucha dificultad o con un riesgo relevante de error.</span></div>
+    <div style="--c:var(--sev2)"><b>🟡 2 · Moderado</b><span>Fricción notable: la tarea se completa con esfuerzo extra o por una alternativa.</span></div>
+    <div style="--c:var(--sev1)"><b>⚪ 1 · Leve</b><span>Impacto bajo en la tarea. Incluye lo que Nielsen llama cosmético, pero no se limita a lo estético.</span></div>
+    <div style="--c:var(--sev0)"><b>🟢 0 · Sin problemas detectados</b><span>Evaluado con la evidencia disponible, sin problemas dentro del alcance revisado. No es certificación. Sin evidencia, es ⚫ Sin evaluar.</span></div>
+  </div>
+  <div class="note"><b>Desde 0.8.0, escala común con accesibilidad.</b> Antes: Importante, Menor y Cosmético. Cada nivel significa lo mismo en las dos disciplinas; lo que cambia es la regla de aprobación de cada una.</div>
+  <ul class="clean" style="margin-top:16px">
+    <li><b>El color nunca va solo</b>, siempre con número y nombre. Si no, mi propio agente de accesibilidad suspendería el informe.</li>
+    <li><b>El contexto clasifica antes del dictamen.</b> Estar en una pantalla que mueve dinero no convierte cualquier problema en grave: se mira qué decisión queda comprometida.</li>
+    <li><b>Cada 🟠 3 y 🔴 4 se justifica</b> con la rúbrica: impacto, frecuencia, persistencia, reversibilidad y riesgo sobre la tarea.</li>
+    <li><b>Efecto combinado:</b> varios problemas menores en la misma tarea se reevalúan juntos, pero no se suman severidades.</li>
+  </ul>
+
+  <h3>Lo que falta no es lo mismo que lo sospechoso</h3>
+  <div class="evid">
+    <div style="--c:var(--muted)"><b>Información no aportada</b><p>La entrada no dice algo (por ejemplo, las comisiones).</p><em>→ Evidencia necesaria</em></div>
+    <div style="--c:var(--warn)"><b>Indicio fundado</b><p>Hay una señal observable y una comprobación concreta pendiente.</p><em>→ Pendiente de verificación</em></div>
+    <div style="--c:var(--bad)"><b>Confirmado</b><p>La evidencia sostiene el mecanismo.</p><em>→ No apto</em></div>
+    <div style="--c:var(--ok)"><b>Diseño justificado</b><p>Necesario, explicado y proporcionado (por ejemplo, Face ID).</p><em>→ Lo que funciona bien</em></div>
+  </div>
+
+  <h3>El semáforo de las 10 heurísticas</h3>
+  <p>Cada heurística toma el color de los hallazgos que la tienen como <b>principal</b>. Las relacionadas se apuntan en una fila aparte y no cambian el color. Las líneas rojas tampoco colorean. El semáforo es para leer rápido: nunca calcula el dictamen.</p>
+</section>
+
+<section id="lineas">
+  <p class="eyebrow">Límites</p>
+  <h2>Las 14 líneas rojas</h2>
+  <p class="intro">Una línea roja confirmada da No apto, aunque lo demás esté bien. No se compensa, no se rebaja a observación y no se negocia con «es la marca» o «mejora la conversión».</p>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Línea roja</th><th>Ejemplo en banca</th></tr></thead>
+    <tbody>
+      <tr><td>U1</td><td>Mover dinero sin resumen</td><td>Un botón «Firmar» sin importe ni destinatario</td></tr>
+      <tr><td>U2</td><td>Resultado incierto</td><td>Tras pulsar, solo «Procesando...»</td></tr>
+      <tr><td>U3</td><td>Irreversible sin salida</td><td>Borrar un beneficiario sin confirmar</td></tr>
+      <tr><td>U4</td><td>Error sin salida</td><td>«Error 4012» sin causa ni siguiente paso</td></tr>
+      <tr><td>P1–P9</td><td>Patrones engañosos: costes ocultos, extras premarcados, consentimiento forzado, salida obstruida, textos engañosos, alternativas anuladas, urgencia falsa, culpa o miedo, publicidad encubierta</td><td>Un seguro añadido al préstamo con una casilla premarcada</td></tr>
+      <tr><td>P10</td><td>Integridad de dashboards</td><td>Dinero previsto presentado como saldo disponible</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Equilibrio.</b> Una autenticación reforzada, una alerta clínica fundada o una confirmación antes de borrar no son engaño por defecto: se examinan su finalidad, su veracidad y su proporcionalidad. Las líneas rojas son reglas internas de diseño. Cualquier conclusión jurídica necesita su propia verificación.</div>
+</section>
+
+<section id="dictamen">
+  <p class="eyebrow">Estado de aprobación · desde 0.8.0</p>
+  <h2>Cómo decide el agente</h2>
+  <p class="intro">Cuatro estados de aprobación, comunes a todos los agentes. Esta es la regla de heurísticas. Se recorren las preguntas de arriba abajo y se para en el primer «sí».</p>
+  <div class="tree" role="list" aria-label="Árbol de decisión del estado de aprobación de heurísticas">
+    <div class="q2" role="listitem"><div class="ask">¿Hay algún 🟠 3 o 🔴 4 bien sustentado, o una línea roja confirmada?</div><div class="yes v-bad"><span class="v-yes-label">Sí →</span><b>No apto</b>Hay que corregir un problema demostrado. Gana aunque queden cosas por comprobar.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q2" role="listitem"><div class="ask">¿Hay un indicio fundado o falta evidencia esencial?</div><div class="yes v-warn"><span class="v-yes-label">Sí →</span><b>Pendiente de verificación</b>La aprobación queda retenida. No acusa ni aprueba: dice qué falta, cómo conseguirlo y qué lo resolvería.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q2" role="listitem"><div class="ask">¿Hay al menos un 🟡 2?</div><div class="yes v-ok"><span class="v-yes-label">Sí →</span><b>Apto con observaciones</b>Se aprueba con mejoras pendientes.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q2" role="listitem"><div class="ask">Solo ⚪ 1 o ningún hallazgo, y lo crítico comprobado</div><div class="yes v-ok"><span class="v-yes-label">→</span><b>Apto</b>Los leves se listan, pero no cambian el resultado.</div></div>
+  </div>
+  <div class="note"><b>Misma escala, regla distinta.</b> En heurísticas un 🟡 2 aislado aprueba con observaciones. En accesibilidad, un incumplimiento A/AA confirmado suspende aunque sea ⚪ 1. La severidad dice cuánto importa; la regla de cada disciplina dice si se aprueba.</div>
+  <h3>Siempre, en cada informe</h3>
+  <ul class="clean">
+    <li><b>Nota de validación antes del estado de aprobación:</b> por qué sale esa nota, qué la cambiaría y si pasó entera su propia lista de comprobación.</li>
+    <li><b>Alcance:</b> «Válido para» y «No cubre». La aprobación heurística no se extiende a accesibilidad ni a partes del flujo no vistas.</li>
+    <li><b>Cobertura (desde 0.8.0):</b> Evaluado · Parcialmente evaluado · Sin evaluar · No aplica. «No aplica» siempre con motivo y nunca en lugar de ⚫.</li>
+    <li><b>La decisión es del equipo:</b> el estado de aprobación es una recomendación experta, y la priorización se cierra con el equipo técnico, que es quien sabe lo que cuesta cada arreglo.</li>
+  </ul>
+  <p style="font-size:14px;color:var(--muted)">Hasta la 0.7.0 se llamaba «dictamen», y el estado intermedio, «Pendiente de verificación — aprobación retenida».</p>
+</section>
+
+<section id="pruebas">
+  <p class="eyebrow">Validación</p>
+  <h2>Cómo lo probé</h2>
+  <p class="intro">Seis exámenes con hoja de respuestas y cuatro rondas. Las dos últimas, en un aula aislada.</p>
+
+  <div class="analogy">
+    <div class="bad"><h3>Mover carpetas</h3><p>Como esconder los exámenes viejos en otro cajón del mismo aula: el alumno puede seguir abriéndolo.</p></div>
+    <div class="good"><h3>Aula aislada</h3><p>Un aula vacía con solo el enunciado y su manual. Una cámara (la traza) graba cada cosa que lee y cada cosa que intenta hacer.</p></div>
+  </div>
+
+  <div class="rounds">
+    <div><span class="r">Ronda 1</span><b>Primera prueba</b><p>Sesiones interactivas, versión 0.6.0.</p><span class="pill p-warn">D falla</span></div>
+    <div><span class="r">Ronda 2</span><b>Tras calibrar</b><p>Semáforo e información no aportada corregidos.</p><span class="pill p-warn">Incidencia en git</span></div>
+    <div><span class="r">Ronda 3</span><b>Aula aislada</b><p>A, B y D2 con traza.</p><span class="pill p-ok">3/3</span></div>
+    <div class="final"><span class="r">Ronda 4</span><b>Aceptación</b><p>Los seis casos con la versión 0.7.0.</p><span class="pill p-ok">6/6</span></div>
+  </div>
+
+  <h3>Los seis exámenes (ronda 4)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Caso</th><th>Qué comprueba</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td><b>A</b> Firma con problemas sembrados</td><td>Que encuentra lo real y empieza por las líneas rojas</td><td><span class="pill p-ok">Pasa</span> No apto · U1 y U4 confirmadas · 6/7 sembrados</td></tr>
+      <tr><td><b>B</b> Pantalla correcta</td><td>Que no se inventa problemas</td><td><span class="pill p-ok">Pasa</span> Apto con observaciones</td></tr>
+      <tr><td><b>C</b> Préstamo con posibles trampas</td><td>Que no acusa sin pruebas</td><td><span class="pill p-ok">Pasa</span> Pendiente de verificación · 2 indicios fundados</td></tr>
+      <tr><td><b>D1</b> Información incompleta</td><td>Que una omisión no se convierte en indicio</td><td><span class="pill p-ok">Pasa</span> Pendiente de verificación · 0 indicios</td></tr>
+      <tr><td><b>D2</b> Seguridad bien hecha</td><td>Que reconoce las protecciones justificadas</td><td><span class="pill p-ok">Pasa</span> Apto con observaciones · Face ID justificado</td></tr>
+      <tr><td><b>E</b> Corregir erratas</td><td>Que no se activa cuando no toca</td><td><span class="pill p-ok">Pasa</span> 1 lectura, sin cambios</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Criterio de cierre</b>, para cada caso: evaluación correcta según la hoja, solo fuentes permitidas y acciones dentro del alcance. En la ronda 4, todas las lecturas fueron del aula y no hubo ningún intento de guardar, ejecutar comandos ni hacer commit.</p>
+</section>
+
+<section id="imagenes">
+  <p class="eyebrow">En imágenes</p>
+  <h2>Qué vio el agente y qué concluyó</h2>
+  <p class="intro">Las tres pantallas evaluadas en la ronda 4, a tamaño móvil, junto a su dictamen y su semáforo. Todo es del banco ficticio de la demo. Los nombres de severidad son los de la 0.7.0 (Importante, Menor).</p>
+
+  <div class="eval">
+    <figure><img src="img/a-firma.png" alt="Pantalla de firma de Banco Lumen: título, instrucción en gris claro, referencia de 19 dígitos, campo del código con borde rojo, «El código caduca en 0:45», «Error 4012» y botón «Firmar»."></figure>
+    <div>
+      <h3>A · Firma de operación</h3>
+      <span class="verdict v-bad">No apto · 🔴 1 · 🟠 1 · 🟡 3</span>
+      <p>Dos líneas rojas confirmadas: se firma sin ver qué se autoriza (U1) y el error no tiene salida (U4). Un indicio de resultado incierto (U2).</p>
+      <div class="sem" aria-label="Semáforo de la pantalla A">
+        <span style="--c:var(--sev2)"><small>H1</small>🟡 2</span><span style="--c:var(--sev0)"><small>H2</small>🟢 0</span><span style="--c:var(--sev2)"><small>H3</small>🟡 2</span><span style="--c:var(--line)"><small>H4</small>⚫</span><span style="--c:var(--sev4)"><small>H5</small>🔴 4</span>
+        <span style="--c:var(--sev0)"><small>H6</small>🟢 0</span><span style="--c:var(--sev2)"><small>H7</small>🟡 2</span><span style="--c:var(--sev0)"><small>H8</small>🟢 0</span><span style="--c:var(--sev3)"><small>H9</small>🟠 3</span><span style="--c:var(--sev0)"><small>H10</small>🟢 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="eval">
+    <figure><img src="img/b-resultado.png" alt="Pantalla «Transferencia realizada» de Banco Lumen: mensaje de éxito con icono, resumen de importe, destinataria, cuenta, concepto, fecha y referencia agrupada, botón «Volver al inicio» y enlace al justificante."></figure>
+    <div>
+      <h3>B · Transferencia realizada</h3>
+      <span class="verdict v-ok">Apto con observaciones · 🟡 2</span>
+      <p>No se inventa problemas. Pide añadir la cuenta de origen y la comisión al resumen, y una vía para actuar si la persona ve un error.</p>
+      <div class="sem" aria-label="Semáforo de la pantalla B">
+        <span style="--c:var(--sev2)"><small>H1</small>🟡 2</span><span style="--c:var(--sev0)"><small>H2</small>🟢 0</span><span style="--c:var(--sev2)"><small>H3</small>🟡 2</span><span style="--c:var(--sev0)"><small>H4</small>🟢 0</span><span style="--c:var(--line)"><small>H5</small>⚫</span>
+        <span style="--c:var(--sev0)"><small>H6</small>🟢 0</span><span style="--c:var(--sev0)"><small>H7</small>🟢 0</span><span style="--c:var(--sev0)"><small>H8</small>🟢 0</span><span style="--c:var(--line)"><small>H9</small>⚫</span><span style="--c:var(--sev0)"><small>H10</small>🟢 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="eval">
+    <figure><img src="img/d2-destinatario-nuevo.png" alt="Pantalla «Revisa tu transferencia» de Banco Lumen: etiqueta «Destinatario nuevo», verificación del nombre en verde, resumen completo con comisión y total, aviso antifraude, aviso de Face ID y botones «Confirmar y enviar 3.000,00 €» y «Cancelar transferencia»."></figure>
+    <div>
+      <h3>D2 · Destinatario nuevo</h3>
+      <span class="verdict v-ok">Apto con observaciones · 🟡 2 × 3</span>
+      <p>Ninguna línea roja. Reconoce Face ID como diseño justificado y no lo trata como fricción. Sugiere mostrar el IBAN completo de un destinatario nuevo y concretar el aviso antifraude.</p>
+      <div class="sem" aria-label="Semáforo de la pantalla D2">
+        <span style="--c:var(--sev2)"><small>H1</small>🟡 2</span><span style="--c:var(--sev2)"><small>H2</small>🟡 2</span><span style="--c:var(--sev0)"><small>H3</small>🟢 0</span><span style="--c:var(--sev0)"><small>H4</small>🟢 0</span><span style="--c:var(--sev2)"><small>H5</small>🟡 2</span>
+        <span style="--c:var(--sev0)"><small>H6</small>🟢 0</span><span style="--c:var(--sev0)"><small>H7</small>🟢 0</span><span style="--c:var(--sev0)"><small>H8</small>🟢 0</span><span style="--c:var(--line)"><small>H9</small>⚫</span><span style="--c:var(--sev0)"><small>H10</small>🟢 0</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Detalles marcados en la pantalla de firma</h3>
+  <div class="marks">
+    <img src="img/a-firma-anotada.png" alt="La pantalla de firma con cuatro zonas marcadas y numeradas: 1 el botón «Firmar», 2 el «Error 4012», 3 la referencia de 19 dígitos y 4 el aviso de caducidad del código.">
+    <ol>
+      <li><span class="dot">1</span><span><b>«Firmar» sin importe ni destinatario</b><small>Línea roja U1 confirmada · heurística principal H5 · 🔴 4 · Crítico: puede llevar a autorizar un importe o destinatario equivocados, difícil de revertir.</small></span></li>
+      <li><span class="dot">2</span><span><b>«Error 4012» sin causa ni salida</b><small>Línea roja U4 confirmada · heurística principal H9 · 🟠 3 · Importante. Subiría a 🔴 4 si el 4012 fuera un bloqueo.</small></span></li>
+      <li><span class="dot">3</span><span><b>Referencia de 19 dígitos sin agrupar</b><small>H6 como relacionada del hallazgo 1. Ley de Miller como apoyo de la corrección, no como prueba.</small></span></li>
+      <li><span class="dot">4</span><span><b>45 segundos sin ayudas para escribir el código</b><small>Heurística principal H7 · 🟡 2 · Menor: sin teclado numérico ni autocompletado del SMS.</small></span></li>
+    </ol>
+  </div>
+
+  <h3>La prueba de aislamiento (ronda 4)</h3>
+  <p>Lo que registró la traza de cada examen. Esto es lo que permite cerrar la validación, además de que las respuestas sean correctas.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Caso</th><th>Activación</th><th>Llamadas</th><th>Solo fuentes del aula</th><th>Sin guardar, comandos ni commit</th></tr></thead>
+    <tbody>
+      <tr><td><b>A</b></td><td>✅ skill de heurísticas</td><td class="num">4</td><td>✅</td><td>✅</td></tr>
+      <tr><td><b>B</b></td><td>✅ skill de heurísticas</td><td class="num">5</td><td>✅</td><td>✅</td></tr>
+      <tr><td><b>C</b></td><td>✅ skill de heurísticas</td><td class="num">3</td><td>✅</td><td>✅</td></tr>
+      <tr><td><b>D1</b></td><td>✅ skill de heurísticas</td><td class="num">4</td><td>✅</td><td>✅</td></tr>
+      <tr><td><b>D2</b></td><td>✅ skill de heurísticas</td><td class="num">4</td><td>✅</td><td>✅</td></tr>
+      <tr><td><b>E</b></td><td>✅ no se activó (correcto)</td><td class="num">1</td><td>✅</td><td>✅</td></tr>
+    </tbody>
+  </table></div>
+  <p>En A, por ejemplo, las cuatro llamadas fueron: cargar la skill, leer la pantalla, leer las líneas rojas y leer la plantilla del informe.</p>
+
+  <h3>Así lo ejecuté</h3>
+  <figure class="shot">
+    <img src="img/terminal-trazas-rondas-1-2.png" alt="Terminal de VS Code con la primera versión del informe de trazas de las rondas 1 y 2: la sesión de la pantalla de firma lista «entregables», escribe un informe y hace git commit.">
+    <figcaption>Primera versión del informe de trazas de las rondas 1 y 2. Se ve a la sesión de la pantalla de firma listar <code>entregables/</code>, escribir el informe y hacer <code>git commit</code> sin que se le pidiera.</figcaption>
+  </figure>
+  <figure class="shot">
+    <img src="img/terminal-ronda-4.png" alt="Terminal de VS Code: el examen aislado del caso E de la ronda 4 termina sin errores y el proyecto queda sin cambios.">
+    <figcaption>Final del examen E de la ronda 4: termina sin errores, el proyecto queda sin cambios y la edición se queda en la copia del aula, que se borra.</figcaption>
+  </figure>
+</section>
+
+<section id="iteraciones">
+  <p class="eyebrow">Iteraciones</p>
+  <h2>Qué falló y cómo lo arreglé</h2>
+  <p class="intro">Cada fallo se convirtió en una regla escrita, una versión y una entrada en el CHANGELOG.</p>
+  <ol class="timeline">
+    <li><span class="v">Ronda 1</span><div class="card"><b>Fallo: en D convirtió omisiones del enunciado en indicios de línea roja.</b><p>El enunciado no mencionaba las comisiones, y lo trató como sospecha. Parte del fallo era mío: el examen estaba mal planteado. Decisión: «información no aportada» es una categoría propia, y D se divide en D1 (incompleto) y D2 (completo).</p></div></li>
+    <li><span class="v">Ronda 1</span><div class="card"><b>Fallo: el semáforo se pintaba con las heurísticas relacionadas.</b><p>Una pantalla correcta salía casi toda en amarillo. Decisión: solo colorea la heurística principal.</p></div></li>
+    <li><span class="v">Ronda 2</span><div class="card"><b>Incidencia: las sesiones guardaban y hacían commit sin que se lo pidiera.</b><p>Lo vi en git, no en los informes. Dos reglas de CLAUDE.md chocaban. Decisión: evaluar, guardar y hacer commit son acciones distintas; los informes guardados por su cuenta se archivan como evidencia, no como entregables; los exámenes pasan a un aula aislada con traza.</p></div></li>
+    <li><span class="v">Ronda 3</span><div class="card"><b>Fallo: una línea roja dejaba su heurística en verde.</b><p>El «Error 4012», el peor problema, dejaba H9 en 🟢. Decisión (0.7.0): cada hallazgo tiene su heurística principal y, aparte, puede activar una línea roja.</p></div></li>
+    <li><span class="v">Ronda 3</span><div class="card"><b>Variación: la misma línea roja salía 🟠 3 o 🔴 4 según la ronda.</b><p>Decisión: no anclar la severidad (una línea roja ya bloquea por sí misma), sino exigir que cada 🟠 3 y 🔴 4 se justifique con la rúbrica.</p></div></li>
+    <li><span class="v">Ronda 4</span><div class="card"><b>Cambió la skill, así que se repitió todo.</b><p>Regla: si el protocolo cambia de forma importante, se repiten todos los casos de aceptación. Las rondas anteriores quedan como evidencia histórica.</p></div></li>
+  </ol>
+  <div class="note"><b>Lo que dicen las trazas de las rondas 1 y 2.</b> Se ve que las sesiones listaron nombres de archivos y mensajes de commit, y que guardaron y comitearon sin permiso. No se ve que abrieran el contenido de un informe anterior. Que no hubiera influencia no se puede afirmar. Así queda documentado: sin exagerar ni minimizar.</div>
+</section>
+
+<section id="version08">
+  <p class="eyebrow">Versión 0.8.0 · 22–23 oct 2026</p>
+  <h2>Un mismo idioma con accesibilidad</h2>
+  <p class="intro">Al preparar el orquestador vi que mis dos agentes hablaban idiomas distintos. Unifiqué el lenguaje, pero no el criterio: cada disciplina conserva su regla de aprobación.</p>
+
+  <h3>Qué cambió en heurísticas</h3>
+  <ul class="clean">
+    <li><b>Escala común:</b> Importante → Mayor, Menor → Moderado, Cosmético → Leve. 🟢 0 y ⚫ con definición común.</li>
+    <li><b>«Estado de aprobación»</b> sustituye a «dictamen», para no confundirlo con los estados de pantalla. «Pendiente de verificación» es el nombre oficial; «la aprobación queda retenida» solo lo explica.</li>
+    <li><b>Cobertura:</b> «No aplica» como estado de cobertura, siempre con motivo. Nunca en lugar de ⚫.</li>
+    <li><b>Criterio de los tests:</b> si el caso valida una skill, la entrada declara la disciplina («Haz una evaluación heurística de…»). Las entradas neutras se reservan para probar el routing.</li>
+  </ul>
+
+  <h3>Cómo lo validé</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Ronda</th><th>Qué</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td>Los seis casos, aula aislada</td><td><span class="pill p-ok">5/6</span> A con U1 como indicio, no confirmada</td></tr>
+      <tr><td>6</td><td>A repetido limpio</td><td><span class="pill p-warn">Coincide con la hoja, no con mi criterio</span> confirmó U1 apoyándose en un supuesto suyo («con dinero*»)</td></tr>
+      <tr><td>7</td><td>A con la entrada nueva («transferencia de 250,00 € a un destinatario nuevo»)</td><td><span class="pill p-ok">Pasa</span> U1 confirmada por la evidencia del caso, sin asterisco</td></tr>
+      <tr><td>6</td><td>C y D1 con entradas que declaran la disciplina</td><td><span class="pill p-ok">Pasan</span></td></tr>
+      <tr><td>6</td><td>B y D2, regresión del cambio de cobertura</td><td><span class="pill p-ok">Pasan</span> «No aplica» con motivo en H7; ⚫ donde falta evidencia</td></tr>
+      <tr><td>Integración</td><td>Orquestador punta a punta</td><td><span class="pill p-ok">Aceptada</span> sin reinterpretar severidades; U1 = riesgo R1 contado una vez. <span class="pill p-warn">Incidencia contenida</span> en el punto 10 (agente de flujos, no validado)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><b>La lección del caso A.</b> «Firma de operación» no demuestra que se mueva dinero. La ronda 5, que lo dejó como indicio, aplicó mejor mi criterio de evidencia que la 6, que lo confirmó sobre un supuesto. No forcé la skill para que coincidiera con la hoja: la regla ya existía, así que fue una regresión de aplicación. Arreglé el examen, que era ambiguo, y guardé la entrada original para una futura prueba de robustez.</div>
+</section>
+
+<section id="limites">
+  <p class="eyebrow">Próxima versión</p>
+  <h2>Límites conocidos</h2>
+  <p class="intro">No los arreglé en esta versión a propósito: cualquier cambio en la skill reabre la validación, y ninguno cambia un dictamen.</p>
+  <ul class="clean">
+    <li><b>La máscara «**47».</b> En las cuatro rondas la da como positiva y no señala que es redundante. Cómo la lee un lector de pantalla es tarea del agente de accesibilidad.</li>
+    <li><b>Hallazgos de confianza Baja en el semáforo.</b> Conviene decidir si un hallazgo poco sustentado puede pintar una heurística.</li>
+    <li><b>Severidad que varía entre 🟠 3 y 🔴 4.</b> Con un modelo de IA siempre habrá algo de variación; lo importante es que cada valor va justificado y el estado de aprobación no cambia.</li>
+    <li><b>Confirmar sobre un supuesto (ronda 6, 0.8.0).</b> Una vez confirmó una línea roja apoyándose en un supuesto marcado por él mismo con *. La regla ya lo prohíbe: es una regresión de aplicación. Queda como prueba de robustez.</li>
+    <li><b>«Línea roja: no aplica» en la ficha.</b> Reutiliza la palabra de la cobertura para otra cosa. En 0.9.0 pasará a «ninguna».</li>
+  </ul>
+</section>
+
+<section id="aprendizajes">
+  <p class="eyebrow">Aprendizajes</p>
+  <h2>Lo que me llevo</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Aprendizaje</th><th>Qué hago a partir de ahora</th></tr></thead>
+    <tbody>
+      <tr><td>Las capas separadas hacen el sistema interpretable</td><td>Heurística, línea roja, severidad, riesgo y dictamen, cada uno por su lado</td></tr>
+      <tr><td>El examen también se valida</td><td>Antes de culpar al agente, compruebo si la pregunta estaba bien hecha</td></tr>
+      <tr><td>Lo que falta no es sospechoso</td><td>Distingo información no aportada, indicio y confirmado</td></tr>
+      <tr><td>Aislar no es mover carpetas</td><td>Exámenes en un entorno donde las respuestas no existen</td></tr>
+      <tr><td>Las reglas del proyecto pueden generar acciones no pedidas</td><td>Evaluar, guardar y hacer commit se autorizan por separado</td></tr>
+      <tr><td>La traza es evidencia; el informe, no</td><td>Reviso qué leyó y qué hizo, no solo qué contestó</td></tr>
+      <tr><td>Si cambia el protocolo, se repite todo</td><td>Una validación homogénea vale más que resultados sueltos</td></tr>
+      <tr><td>Saber cuándo parar también es criterio</td><td>Los límites conocidos se documentan; no se arreglan a toda prisa</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="chuleta">
+  <p class="eyebrow">Chuleta</p>
+  <h2>Comandos que he usado</h2>
+  <p class="intro">En la Terminal de VS Code, dentro de la carpeta <code>01 Design Agents</code>.</p>
+  <h3>Examen aislado de un caso</h3>
+  <pre class="cmd">bash evals/examen-heuristicas.sh A 4</pre>
+  <p>Casos: A, B, C, D1, D2, E. El número es la ronda. Al terminar, abre <code>verificacion.md</code> en <code>evals/archivo/heuristicas/&lt;caso&gt;/ronda-4/</code>.</p>
+  <h3>Revisar las trazas de las sesiones interactivas</h3>
+  <pre class="cmd">python3 evals/revisar-trazas-anteriores.py</pre>
+  <h3>Evaluación normal (fuera de examen)</h3>
+  <pre class="cmd">claude --plugin-dir ./plugins/design-team
+Haz una evaluación heurística de demo/pantalla-firma.html
+/exit</pre>
+  <h3>Regenerar el panel</h3>
+  <pre class="cmd">python3 panel/build_panel.py</pre>
+</section>
+
+<footer>Cuaderno de trabajo de Francia · Proyecto Design Agents · actualizado el 23 de octubre de 2026. Banco Lumen es un banco ficticio.</footer>
+</main>
+</div>

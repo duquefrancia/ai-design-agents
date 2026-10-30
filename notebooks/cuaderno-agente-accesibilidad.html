@@ -1,0 +1,470 @@
+<title>Cuaderno del agente de accesibilidad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cuaderno de una sola columna (máx. 760px) con índice lateral en escritorio; esquemas construidos con HTML/CSS para que se lean igual en local y publicados. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#17202b; --muted:#4f5b69; --line:#d7dde4;
+  --accent:#0b3d6e; --accent-soft:#e3ecf6;
+  --ok:#1f6b3f; --ok-soft:#e5f3ea; --warn:#8a5a00; --warn-soft:#fbf0d9; --bad:#a3231c; --bad-soft:#f9e4e2;
+  --sev4:#a3231c; --sev3:#c2410c; --sev2:#8a5a00; --sev1:#4f5b69;
+  --f-display:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10161d; --surface:#18212b; --fg:#e8edf2; --muted:#a3b0bd; --line:#2c3846;
+  --accent:#8cb8e6; --accent-soft:#1c2c3d;
+  --ok:#7fd1a0; --ok-soft:#163023; --warn:#e9c46a; --warn-soft:#332810; --bad:#f19a92; --bad-soft:#3a1b19;
+  --sev4:#f19a92; --sev3:#f4a66b; --sev2:#e9c46a; --sev1:#a3b0bd; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161d; --surface:#18212b; --fg:#e8edf2; --muted:#a3b0bd; --line:#2c3846;
+  --accent:#8cb8e6; --accent-soft:#1c2c3d;
+  --ok:#7fd1a0; --ok-soft:#163023; --warn:#e9c46a; --warn-soft:#332810; --bad:#f19a92; --bad-soft:#3a1b19;
+  --sev4:#f19a92; --sev3:#f4a66b; --sev2:#e9c46a; --sev1:#a3b0bd; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px}
+nav p{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+nav ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+nav a{color:var(--muted);text-decoration:none}
+nav a:hover,nav a:focus-visible{color:var(--accent);text-decoration:underline}
+main{min-width:0;max-width:760px}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:26px;font-weight:800;margin-bottom:8px}
+h3{font-size:18px;font-weight:600;margin:24px 0 8px}
+p{margin:0 0 12px}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.lead{font-size:18px;color:var(--muted);max-width:62ch}
+header.top{padding-bottom:28px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:16px;font-size:14px;color:var(--muted)}
+section{padding-block:36px;border-bottom:1px solid var(--line);scroll-margin-top:16px}
+section > .intro{color:var(--muted);max-width:62ch}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.tbl{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:15px;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--bg)}
+.num{font-variant-numeric:tabular-nums}
+
+/* Resultado */
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.score div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.score b{display:block;font:800 30px/1.1 var(--f-display);color:var(--accent)}
+.score span{font-size:14px;color:var(--muted)}
+
+/* Anatomía */
+.anat{margin-top:20px;display:grid;gap:10px}
+.box{border:2px solid var(--accent);border-radius:10px;padding:14px;background:var(--surface)}
+.box .lbl{font:600 13px/1.3 var(--f-mono);color:var(--accent)}
+.box .lbl small{display:block;font:400 13px/1.4 var(--f-body);color:var(--muted);margin-top:2px}
+.box .inner{display:grid;gap:10px;margin-top:12px}
+.box.l2{border-color:var(--line);border-width:1px}
+.box.l3{border-style:dashed;border-color:var(--line)}
+.files{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.file{background:var(--bg);border-radius:6px;padding:8px 10px;font-size:13px}
+.file b{font:500 13px var(--f-mono);display:block;color:var(--fg)}
+.side{display:flex;flex-wrap:wrap;gap:10px}
+.side .box{flex:1 1 220px}
+
+/* Proceso */
+.steps{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;position:relative;padding-bottom:18px}
+.steps li::before{content:"";position:absolute;left:21px;top:40px;bottom:0;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps .n{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--surface);display:grid;place-items:center;font:800 18px var(--f-display)}
+.steps h3{margin:8px 0 4px}
+.steps p{color:var(--muted);margin:0}
+.loop{margin-top:6px;display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--accent);font-weight:600}
+
+/* Severidad */
+.sev{display:grid;gap:8px;margin-top:16px}
+.sev div{display:grid;grid-template-columns:120px 40px minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:6px;padding:12px 14px}
+.sev b{color:var(--c)}
+.sev .score4{font:800 18px var(--f-display);color:var(--c)}
+.sev small{display:block;color:var(--muted);font-size:14px}
+
+/* Árbol de veredicto */
+.tree{margin-top:20px;display:grid;gap:0}
+.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.q .ask{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-weight:600}
+.q .yes{border-radius:8px;padding:12px 14px;font-size:15px}
+.q .yes b{display:block;font-family:var(--f-display);font-size:17px}
+.arrow{padding:4px 0 4px 24px;color:var(--muted);font-size:13px}
+.v-bad{background:var(--bad-soft);color:var(--bad)}
+.v-warn{background:var(--warn-soft);color:var(--warn)}
+.v-ok{background:var(--ok-soft);color:var(--ok)}
+.v-yes-label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+
+/* Entrada */
+.input{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.input div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.meter{height:8px;background:var(--line);border-radius:4px;margin:10px 0 8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.input p{font-size:14px;color:var(--muted);margin:0}
+
+/* Callouts */
+.note{background:var(--accent-soft);border-radius:8px;padding:14px 16px;margin:16px 0}
+.note b:first-child{color:var(--accent)}
+.analogy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.analogy div{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--surface)}
+.analogy .bad{border-color:var(--bad)}
+.analogy .good{border-color:var(--ok)}
+.analogy h3{margin:0 0 6px;font-size:16px}
+
+/* Estados */
+.pill{display:inline-block;font:600 12px/1 var(--f-body);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+
+/* Línea de versiones */
+.timeline{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:12px}
+.timeline li{display:grid;grid-template-columns:92px minmax(0,1fr);gap:16px}
+.timeline .v{font:500 14px var(--f-mono);color:var(--accent);padding-top:2px}
+.timeline .card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.timeline .card p{margin:4px 0 0;color:var(--muted);font-size:15px}
+.timeline .card b{font-weight:600}
+
+/* Historia */
+.star{display:grid;gap:10px;margin-top:16px}
+.star div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.star span{font:600 12px/1.6 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+
+pre.cmd{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:6px 0 14px;overflow-x:auto;font:14px/1.5 var(--f-mono)}
+ul.clean{padding-left:20px;margin:8px 0 12px}
+ul.clean li{margin-bottom:6px}
+footer{padding-top:28px;font-size:14px;color:var(--muted)}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:16px}
+  nav{position:static;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+  nav ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .score,.input,.analogy{grid-template-columns:minmax(0,1fr)}
+  .q{grid-template-columns:minmax(0,1fr)}
+  .sev div{grid-template-columns:minmax(0,1fr) auto}
+  .sev div small{grid-column:1/-1}
+  .star div,.timeline li{grid-template-columns:minmax(0,1fr);gap:4px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<nav aria-label="Índice">
+  <p>En este cuaderno</p>
+  <ol>
+    <li><a href="#resumen">Resumen</a></li>
+    <li><a href="#anatomia">Cómo está hecho</a></li>
+    <li><a href="#proceso">El proceso</a></li>
+    <li><a href="#criterio">Mi criterio</a></li>
+    <li><a href="#veredicto">Los veredictos</a></li>
+    <li><a href="#pruebas">Cómo lo probé</a></li>
+    <li><a href="#iteraciones">Qué falló</a></li>
+    <li><a href="#decisiones">Diario de decisiones</a></li>
+    <li><a href="#aprendizajes">Aprendizajes</a></li>
+    <li><a href="#chuleta">Chuleta</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <p class="eyebrow">Notas de trabajo · Design Agents</p>
+  <h1>Cuaderno del agente de accesibilidad</h1>
+  <p class="lead" style="margin-top:14px">Qué decidí, cómo lo probé y qué aprendí al crear un agente de IA que audita accesibilidad con mi criterio de producto regulado.</p>
+  <div class="meta"><span>Francia · Senior Product Designer</span><span>15–23 oct 2026</span><span>Plugin <span class="mono">design-team</span> v0.8.0 validada</span></div>
+  <div class="note" style="margin-top:16px"><b>Edición pública.</b> (derivada de la versión 0.8.0). Se han retirado dos referencias de la skill que citan bancos reales y las notas internas de preparación. El criterio y los resultados no cambian.</div>
+</header>
+
+<section id="resumen">
+  <p class="eyebrow">Resumen</p>
+  <h2>En una frase</h2>
+  <p>Convertí mi forma de auditar accesibilidad en banca en un agente que cualquiera puede ejecutar, y lo validé como un producto: con una hoja de respuestas, casos de prueba y correcciones versionadas.</p>
+  <div class="score">
+    <div><b class="num">5 / 5</b><span>casos de prueba superados</span></div>
+    <div><b class="num">13 / 15</b><span>problemas sembrados detectados (y 2 a medias)</span></div>
+    <div><b class="num">5</b><span>versiones hasta la final (0.1 → 0.5)</span></div>
+  </div>
+  <p style="font-size:14px;color:var(--muted);margin-top:10px">Cifras de la versión 0.5.0. En la 0.8.0 el caso A repite 13 de 15 y los cinco casos vuelven a pasar (ver «Diario de decisiones»).</p>
+  <div class="note"><b>Idea clave.</b> Lo valioso no es "haber hecho un agente". Es haber puesto mi criterio dentro (qué es grave, qué no acepto nunca, cuándo apruebo) y haber comprobado que lo aplica.</div>
+</section>
+
+<section id="anatomia">
+  <p class="eyebrow">Anatomía</p>
+  <h2>Cómo está hecho el agente</h2>
+  <p class="intro">Tres capas, como una muñeca rusa. El plugin es la caja, el agente es el especialista y la skill es su manual de trabajo.</p>
+
+  <div class="anat" role="group" aria-label="Esquema de las piezas del agente">
+    <div class="box">
+      <div class="lbl">plugins/design-team/ <small>Plugin: la caja que agrupa los 6 agentes y sus skills. Lleva versión (0.8.0).</small></div>
+      <div class="inner">
+        <div class="side">
+          <div class="box l2">
+            <div class="lbl">agents/accessibility-auditor.md <small>El especialista: quién es, qué herramientas puede usar y qué entrega. Es de solo lectura.</small></div>
+          </div>
+          <div class="box l2">
+            <div class="lbl">skills/auditing-accessibility/ <small>El manual: cómo audito yo.</small></div>
+            <div class="files">
+              <div class="file"><b>SKILL.md</b>Procedimiento, severidades, líneas rojas y veredictos</div>
+              <div class="file"><b>reference/</b>WCAG 2.2 AA, productos regulados, casos de banca</div>
+              <div class="file"><b>templates/informe.md</b>Forma fija del informe</div>
+              <div class="file"><b>scripts/contraste.py</b>Calcula el contraste, no lo estima</div>
+              <div class="file"><b>evals/casos.md</b>Los exámenes A–F</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="box l3">
+      <div class="lbl">CLAUDE.md <small>Reglas de la carpeta que Claude Code lee siempre: idioma, honestidad, no leer la hoja de respuestas, cada auditoría es independiente.</small></div>
+    </div>
+  </div>
+
+  <h3>Por qué separar así</h3>
+  <ul class="clean">
+    <li><b>La skill carga poco a poco.</b> Claude solo lee la descripción hasta que la necesita; las referencias se abren cuando hacen falta. Así no se satura.</li>
+    <li><b>El agente pone límites.</b> Puede leer y calcular contrastes, pero no escribir archivos.</li>
+    <li><b>CLAUDE.md protege las pruebas.</b> Es la regla del aula, válida para todos los agentes.</li>
+  </ul>
+</section>
+
+<section id="proceso">
+  <p class="eyebrow">Proceso</p>
+  <h2>De borrador a agente probado</h2>
+  <p class="intro">El orden importa: primero el criterio, después las pruebas, y solo entonces se ajusta.</p>
+  <ol class="steps">
+    <li><span class="n">1</span><div><h3>Partir de un borrador</h3><p>Una skill genérica de auditoría WCAG como punto de partida.</p></div></li>
+    <li><span class="n">2</span><div><h3>Hacerla mía</h3><p>Reescribí severidades, tono y foco bancario con mi experiencia: firma digital, agregador bancario, productos regulados.</p></div></li>
+    <li><span class="n">3</span><div><h3>Darle referencias</h3><p>WCAG 2.2 AA, cinco lentes de producto regulado, diez casos tipo de banca y evidencia documental de un banco real (estas dos referencias no se incluyen en la edición pública).</p></div></li>
+    <li><span class="n">4</span><div><h3>Escribir los exámenes antes de probar</h3><p>Pantalla con 15 problemas sembrados y su hoja de respuestas, una pantalla correcta y casos límite.</p></div></li>
+    <li><span class="n">5</span><div><h3>Probar en sesiones limpias</h3><p>Un caso por sesión nueva de Claude Code. Cada informe se guarda y se puntúa.</p></div></li>
+    <li><span class="n">6</span><div><h3>Calibrar y versionar</h3><p>Cada fallo se convierte en una regla escrita, una versión nueva y una entrada en el CHANGELOG.</p><span class="loop">↻ vuelve al paso 5 hasta que todo pasa</span></div></li>
+  </ol>
+</section>
+
+<section id="criterio">
+  <p class="eyebrow">Criterio</p>
+  <h2>Qué es grave para mí</h2>
+  <p class="intro">La severidad se mide por el daño real a la persona, no por el nivel de la norma. <b>La tarea manda sobre la norma.</b></p>
+  <p>Desde la 0.8.0 la escala es <b>común</b> con el agente de heurísticas: cada nivel significa lo mismo en las dos disciplinas.</p>
+  <div class="sev">
+    <div style="--c:var(--sev4)"><b>🔴 Crítico</b><span class="score4 num">4</span><span>No puede completar la tarea.<small>El foco desaparece en el paso de confirmar un pago.</small></span></div>
+    <div style="--c:var(--sev3)"><b>🟠 Mayor</b><span class="score4 num">3</span><span>La completa con mucha dificultad o con riesgo de error.<small>Firmar sin ver de forma accesible el importe ni el destinatario.</small></span></div>
+    <div style="--c:var(--sev2)"><b>🟡 Moderado</b><span class="score4 num">2</span><span>Fricción notable, pero hay alternativa.<small>Orden de foco ilógico fuera del flujo crítico.</small></span></div>
+    <div style="--c:var(--sev1)"><b>⚪ Leve</b><span class="score4 num">1</span><span>Impacto bajo en la tarea. No significa estético ni conforme.<small>Idioma no declarado en una página simple.</small></span></div>
+    <div style="--c:var(--ok)"><b>🟢 Sin problemas detectados</b><span class="score4 num">0</span><span>Evaluado con la evidencia disponible, sin problemas dentro del alcance revisado.<small>No es certificación ni conformidad universal.</small></span></div>
+    <div style="--c:var(--muted)"><b>⚫ Sin evaluar</b><span class="score4 num">—</span><span>No hay evidencia suficiente para valorarlo.<small>Lo que la entrada no permite comprobar.</small></span></div>
+  </div>
+  <div class="note"><b>La severidad no decide la conformidad.</b> Dice qué arreglar primero. Si se confirma un incumplimiento WCAG A o AA, el estado de aprobación es No apto aunque sea ⚪ 1 · Leve.</div>
+
+  <h3>Líneas rojas</h3>
+  <p>No se rebajan a "observación" ni se negocian con "es la marca". Si aparece una, el estado de aprobación es No apto y el informe empieza por ella. Por ejemplo: <b>el foco eliminado</b> en un paso obligatorio, o una información crítica que <b>solo se comunica con color</b>, como la verificación del beneficiario.</p>
+
+  <h3>Lo que se puede verificar depende de lo que me dan</h3>
+  <div class="input">
+    <div><b>HTML o código</b><div class="meter" aria-hidden="true"><i style="width:90%"></i></div><p>Casi todo: marcado, foco, contraste, nombres accesibles.</p></div>
+    <div><b>Captura o Figma</b><div class="meter" aria-hidden="true"><i style="width:45%"></i></div><p>Contraste, tamaño, texto visible. Teclado y semántica quedan sin verificar.</p></div>
+    <div><b>Descripción</b><div class="meter" aria-hidden="true"><i style="width:12%"></i></div><p>Solo riesgos. Casi todo queda sin verificar.</p></div>
+  </div>
+
+  <h3>Lente de producto regulado</h3>
+  <p>Lo que no es WCAG pero importa en banca va aparte, como <b>riesgo de producto</b>: fraude y suplantación, estados inciertos ("¿se hizo o no?"), patrones oscuros, jerga del sector y autenticación reforzada accesible. Lleva severidad y categoría, pero <b>no cambia el estado de aprobación de accesibilidad</b> (desde 0.8.0). Si bloquea la aprobación general lo decide el orquestador. Lo legal se marca <code>[legal]</code> y se cierra con Compliance, no solo con diseño.</p>
+</section>
+
+<section id="veredicto">
+  <p class="eyebrow">Estados de aprobación · desde 0.8.0</p>
+  <h2>Cómo decide el agente</h2>
+  <p class="intro">Cuatro estados de aprobación, comunes a todos los agentes. Cada disciplina tiene su propia regla para llegar a ellos. Se recorren las preguntas de arriba abajo y se para en el primer "sí".</p>
+
+  <div class="tree" role="list" aria-label="Árbol de decisión del estado de aprobación de accesibilidad">
+    <div class="q" role="listitem"><div class="ask">¿Se confirma un incumplimiento WCAG A/AA (cualquier severidad) o una línea roja?</div><div class="yes v-bad"><span class="v-yes-label">Sí →</span><b>No apto</b>Hay un incumplimiento demostrado. Si todos son ⚪ 1 o 🟡 2, se dice cuántos tienen arreglo rápido.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q" role="listitem"><div class="ask">¿Falta evidencia esencial para saber si se cumple un criterio A/AA?</div><div class="yes v-warn"><span class="v-yes-label">Sí →</span><b>Pendiente de verificación</b>No demuestra un fallo: la aprobación queda retenida. Lleva siempre «Evidencia necesaria»: qué falta, qué criterio y cómo resolverlo.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q" role="listitem"><div class="ask">¿Quedan mejoras sin incumplimiento (AAA, buenas prácticas)?</div><div class="yes v-ok"><span class="v-yes-label">Sí →</span><b>Apto con observaciones</b>Ningún incumplimiento A/AA. Las observaciones solo mejoran.</div></div>
+    <div class="arrow" aria-hidden="true">↓ no</div>
+    <div class="q" role="listitem"><div class="ask">Nada pendiente y lo crítico verificado</div><div class="yes v-ok"><span class="v-yes-label">→</span><b>Apto</b>Sin incumplimientos ni observaciones.</div></div>
+  </div>
+
+  <div class="note"><b>Por qué un Leve da No apto.</b> La conformidad A/AA no se gradúa: se cumple o no. La severidad dice qué arreglar primero. En heurísticas, en cambio, un 🟡 2 aislado da Apto con observaciones: misma escala, regla distinta.</div>
+
+  <h3>Cuando hay varias evaluaciones (orquestador)</h3>
+  <p>Gana el estado más restrictivo: <b>No apto &gt; Pendiente de verificación &gt; Apto con observaciones &gt; Apto</b>. El informe dice qué evaluación lo decide, conserva los pendientes de las demás y no hace medias ni compensa. Las evaluaciones que <b>No aplican</b> quedan fuera del cálculo, con motivo.</p>
+
+  <h3>Reglas de cierre, antes de cualquier Apto</h3>
+  <ol class="clean">
+    <li>Cero hallazgos en lo no verificado no acredita nada.</li>
+    <li>Ningún arreglo se da por corregido sin volver a probarlo.</li>
+    <li>El flujo completo manda sobre la pantalla.</li>
+    <li>Lo legal se cierra con Compliance, no solo con diseño.</li>
+    <li>El estado de aprobación no es una declaración de conformidad WCAG.</li>
+    <li>Se cierra sobre el resultado real, no sobre la presencia del componente.</li>
+  </ol>
+  <p style="font-size:14px;color:var(--muted)">Hasta la 0.7.0 eran «veredictos»: Apto, Apto con observaciones, No apto y No apto por evidencia insuficiente, con Bloqueante, Alta, Media y Baja. La historia está en «Diario de decisiones».</p>
+</section>
+
+<section id="pruebas">
+  <p class="eyebrow">Validación</p>
+  <h2>Cómo lo probé</h2>
+  <p class="intro">Igual que se prueba un producto antes de lanzarlo: con exámenes definidos de antemano y una hoja de respuestas que el agente nunca ve.</p>
+
+  <h3>Una sesión nueva por caso</h3>
+  <div class="analogy">
+    <div class="bad"><h3>Misma sesión</h3><p>Como un alumno que hace el examen B justo después del A: recuerda las respuestas y se puede copiar. No sabes si sabe.</p></div>
+    <div class="good"><h3>Sesión nueva</h3><p>Un alumno recién llegado que no ha visto nada. Si acierta, es porque la skill funciona por sí sola.</p></div>
+  </div>
+  <pre class="cmd">claude --plugin-dir ./plugins/design-team   → preguntar → guardar → /exit</pre>
+
+  <h3>Los cinco exámenes</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Caso</th><th>Qué comprueba</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td><b>A</b> Pantalla de firma con 15 problemas</td><td>Que encuentra los fallos reales, empieza por la línea roja y calcula contrastes con el script</td><td><span class="pill p-ok">Pasa</span> 13/15 y 2 a medias</td></tr>
+      <tr><td><b>B</b> Pantalla correcta</td><td>Que no se inventa fallos y no aprueba sin evidencia</td><td><span class="pill p-ok">Pasa</span> repetido tras la regla de independencia</td></tr>
+      <tr><td><b>C</b> Un botón suelto</td><td>Que audita solo lo que recibe y deja el foco como no verificable</td><td><span class="pill p-ok">Pasa</span> en el 2.º intento</td></tr>
+      <tr><td><b>D</b> Descripción de consentimientos premarcados</td><td>Que detecta el riesgo legal y lo saca de la tabla WCAG</td><td><span class="pill p-ok">Pasa</span></td></tr>
+      <tr><td><b>E</b> Corregir erratas</td><td>Que la skill no se activa cuando no le toca</td><td><span class="pill p-ok">Pasa</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="iteraciones">
+  <p class="eyebrow">Iteraciones</p>
+  <h2>Qué falló y cómo lo arreglé</h2>
+  <p class="intro">Cada fallo encontrado en las pruebas se convirtió en una regla escrita y una versión nueva. Nada se arregló "de palabra".</p>
+  <ol class="timeline">
+    <li><span class="v">0.2.0</span><div class="card"><b>Mi criterio dentro de la skill.</b><p>Qué miro primero, anclas de severidad, líneas rojas y los primeros veredictos.</p></div></li>
+    <li><span class="v">0.3.0</span><div class="card"><b>Referencias, plantilla y exámenes.</b><p>Productos regulados, casos de banca, plantilla fija de informe y casos A–F. El agente pasa de "Pasa / No pasa" a "Apto / No apto".</p></div></li>
+    <li><span class="v">0.4.0</span><div class="card"><b>Fallo: confundía "sin evidencia" con "apto con observaciones".</b><p>Decisión: son cosas distintas. "No apto por evidencia insuficiente" pasa a ser un veredicto propio, con la tabla de evidencia que falta.</p></div></li>
+    <li><span class="v">0.5.0</span><div class="card"><b>Duda: ¿un Media cabe en "Apto con observaciones"?</b><p>Decisión: no. Solo Baja o mejoras. Un Media da No apto, indicando cuántos son de arreglo rápido.</p></div></li>
+    <li><span class="v">0.8.0</span><div class="card"><b>Un mismo idioma con heurísticas.</b><p>Escala común, estados de aprobación comunes, regla A/AA por conformidad, riesgos de producto aparte, cobertura WCAG completa (55 criterios) y trazabilidad. Validada el 23 oct 2026.</p></div></li>
+    <li><span class="v">CLAUDE.md</span><div class="card"><b>Fallo: el agente copiaba de informes anteriores.</b><p>En el caso B encontró una auditoría antigua, dijo que llegaba "a las mismas conclusiones" y la editó. Nueva regla: cada auditoría es independiente y solo escribe donde se le indica.</p></div></li>
+  </ol>
+  <div class="note"><b>Otro fallo, en el caso C.</b> En la primera ejecución auditó la pantalla entera en lugar del botón que le pasé. Repetido en una sesión limpia, auditó solo el botón. La lección: si una prueba falla, primero se repite limpia antes de cambiar la skill.</div>
+</section>
+
+<section id="decisiones">
+  <p class="eyebrow">Decisiones · 22 oct 2026</p>
+  <h2>Diario de decisiones</h2>
+  <p class="intro">Qué decidí, por qué y qué descarté. Sirve para no volver a discutir lo ya decidido y para poder explicar el criterio.</p>
+
+  <h3>Decisiones de criterio (v0.8.0)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Decisión</th><th>Por qué</th><th>Lo que descarté</th></tr></thead>
+    <tbody>
+      <tr><td>D1</td><td>Escala común con heurísticas: 🔴 4 Crítico · 🟠 3 Mayor · 🟡 2 Moderado · ⚪ 1 Leve · 🟢 0 · ⚫</td><td>El orquestador junta informes; con dos idiomas podía mezclar «Media» con «Menor»</td><td>Dejar las escalas y traducir en el orquestador: conservaba la validación, pero mantenía dos idiomas</td></tr>
+      <tr><td>D2</td><td>«Cosmético» pasa a «Leve»</td><td>Impacto bajo no es solo estética, y no suena despectivo</td><td>Mejora recomendada, Bajo</td></tr>
+      <tr><td>D3</td><td>«No apto por evidencia insuficiente» pasa a «Pendiente de verificación»</td><td>«No apto» sonaba a fallo encontrado. Pendiente dice la verdad: la aprobación queda retenida</td><td>Mantener el nombre antiguo</td></tr>
+      <tr><td>D4</td><td>Severidad y estado de aprobación separados. En accesibilidad, todo incumplimiento A/AA confirmado da No apto, incluido Leve</td><td>La conformidad no se gradúa; la severidad prioriza la remediación</td><td>El mismo umbral en todas las disciplinas (un 🟡 2 aprueba en todas, o suspende en todas)</td></tr>
+      <tr><td>D5</td><td>Los riesgos de banca fuera de WCAG van aparte y no cambian el estado de aprobación</td><td>Un informe que dice «incumple WCAG» por algo legal es falso y no se puede defender en una auditoría</td><td>Que un riesgo Mayor o Crítico fuera de WCAG diera No apto de accesibilidad</td></tr>
+      <tr><td>D6</td><td>Estado global por mayor restricción, diciendo quién lo decide</td><td>Una disciplina no compensa a otra</td><td>Medias o puntuaciones combinadas</td></tr>
+      <tr><td>D7</td><td>Cobertura: Evaluado · Parcialmente · Sin evaluar · No aplica</td><td>Separar «no lo miré», «no tocaba» y «miré y está bien»</td><td>Que una evaluación ausente pase sola a Pendiente</td></tr>
+      <tr><td>D8</td><td>Se llama «estado de aprobación», no «estado»</td><td>No confundirlo con los estados de pantalla (error, carga…)</td><td>«Veredicto» y «dictamen», uno en cada agente</td></tr>
+      <tr><td>D9</td><td>Cobertura WCAG de 37 a 55 criterios A/AA</td><td>Un agente solo revisa lo que tiene en su lista: un hueco aprueba en silencio</td><td>Aplazarlo a 0.9.0</td></tr>
+      <tr><td>D10</td><td>Trazabilidad en el informe: fecha, versión, objeto evaluado y responsable</td><td>En banca, una auditoría sin trazabilidad no sirve como defensa</td><td>—</td></tr>
+      <tr><td>D11</td><td>Un riesgo de producto 🟠 3 bloquea por defecto y solo sigue con aceptación motivada (responsable, justificación, alcance y condiciones). Un 🔴 4 no se libera con una firma ordinaria de Producto</td><td>En banca, lo crítico no lo desbloquea quien tiene prisa por lanzar. Aceptar no es resolver: el riesgo sigue abierto o aceptado</td><td>Una misma firma para los dos niveles</td></tr>
+      <tr><td>D12</td><td>«No aplica» es cobertura, no estado de aprobación. Se propone en el plan y se confirma en la firma del alcance; sin confirmar, cuenta como Sin evaluar</td><td>Que no sirva para tapar falta de evidencia</td><td>Firmar cada criterio suelto</td></tr>
+      <tr><td>D13</td><td>Si ninguna evaluación aplica, el global es «No aplica al alcance»</td><td>No es Apto (no se superó ningún gate) ni Pendiente (no falta evidencia)</td><td>Usar Apto o Pendiente</td></tr>
+      <tr><td>D14</td><td>Si un caso valida una skill, la entrada declara la disciplina. Las entradas neutras se reservan para probar el routing</td><td>«Audita esta pantalla» con casillas premarcadas activó heurísticas: el fallo era del examen, no del routing</td><td>Adaptar la skill de accesibilidad para que capture patrones engañosos</td></tr>
+      <tr><td>D15</td><td>Regresión por impacto para el cambio de cobertura (3 casos e invariantes), no toda la batería</td><td>El cambio no toca umbrales ni reglas de aprobación</td><td>Repetir todo, o no repetir nada</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Decisiones de método</h3>
+  <ul class="clean">
+    <li><b>Un cambio de criterio por versión, y cada versión validada.</b> Si metes diez cambios y un caso falla, no sabes cuál lo rompió.</li>
+    <li><b>El commit es el paso de aceptación</b>, no una consecuencia automática de terminar.</li>
+    <li><b>Las fuentes externas se contrastan con mi criterio, no se copian.</b> Si algo choca, se marca como conflicto y decido yo.</li>
+  </ul>
+
+  <h3>Contraste con una fuente externa: regulaciones (oct 2026)</h3>
+  <p>Una síntesis de normativa (EAA, EN 301 549, ADA, 508) comparada con la skill. Es una respuesta de chat, no una fuente primaria: sus fechas legales quedan como <code>[legal]</code> hasta que las verifique Compliance.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Destino</th><th>Qué</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill p-ok">Integrado en 0.8.0</span></td><td>Cobertura de los 55 criterios A/AA (incluido 3.2.6 Ayuda consistente) · trazabilidad del informe</td></tr>
+      <tr><td><span class="pill p-bad">Descartado: choca con mi criterio</span></td><td>Severidad de 5 niveles · dictamen «Conforme / No conforme» · confianza por método · severidad por defecto en cada regla · que el agente emita declaraciones de conformidad o ACR</td></tr>
+      <tr><td><span class="pill p-warn">Aplazado a 0.9.0</span></td><td>Aplicabilidad e intake legal · lenguaje B2 como riesgo de producto · overlays nunca son remediación · alternativa a biometría y KYC · terceros en el flujo · soporte y declaración de accesibilidad · PDF · preferencias del sistema en nativo · carga desproporcionada como registro · método por hallazgo · matriz de tecnologías de apoyo · tabla por criterio estilo ACR · IA del producto</td></tr>
+      <tr><td><span class="pill">Fuera de alcance</span></td><td>Salud, seguros, SaaS, EE. UU., Reino Unido y Canadá</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Cómo validé la 0.8.0</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Prueba</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td>Accesibilidad A–E (sesiones nuevas)</td><td><span class="pill p-ok">Pasan</span> A: 13 de 15 y 2 a medias, como en la 0.5.0, con las reglas nuevas aplicadas. D falló por un enunciado ambiguo; con «Revisa la accesibilidad de…», pasa</td></tr>
+      <tr><td>Heurísticas, seis casos (aula aislada)</td><td><span class="pill p-ok">Pasan</span> tras corregir el examen A (rondas 5 a 7) y declarar la disciplina en C y D1</td></tr>
+      <tr><td>Regresión del cambio de cobertura</td><td><span class="pill p-ok">Pasa</span> «No aplica» siempre con motivo, no sustituye a «Sin evaluar» y no se confunde con 🟢 0</td></tr>
+      <tr><td>Orquestador punta a punta (grabado)</td><td><span class="pill p-ok">Aceptada</span> Los gates de integración se cumplen: No apto trazable; no aceptó un riesgo sin datos; R1 = U1 contado una vez, conservando el gate más estricto; no reinterpretó severidades. <span class="pill p-warn">Incidencia contenida</span> el agente de flujos (no validado) intentó escribir en <code>/tmp/noop</code>; el control de permisos lo denegó y pasa al backlog 0.9.0</td></tr>
+      <tr><td>Exclusión sin confirmar</td><td><span class="pill p-ok">Pasa</span> queda Sin evaluar y el global es Pendiente de verificación</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Criterio de cierre:</b> skills validadas por separado + integración correcta + exclusiones controladas + agregación trazable = 0.8.0 lista para commit.</p>
+
+  <h3>Backlog 0.9.0</h3>
+  <ul class="clean">
+    <li>Distinguir «cumple» de «No aplica»: 2.4.1 salió como «No aplica» cuando los landmarks lo cumplen.</li>
+    <li>Permitir renderizar en navegador como parte del método, con reglas: cuándo, qué comprueba, y que el navegador es una fuente de evidencia, no una licencia para inferir lo que no se ha observado.</li>
+    <li>Integrar lo aplazado de la fuente de regulaciones, empezando por aplicabilidad, lenguaje B2 y overlays.</li>
+    <li>Fuera de esta skill: el agente de flujos intentó escribir fuera de la carpeta autorizada; los agentes de flujos, historias y design system se validarán por separado.</li>
+  </ul>
+
+  <h3>Lo que me llevo de esta iteración</h3>
+  <ul class="clean">
+    <li>Unificar el lenguaje no es unificar el criterio: la misma escala puede tener reglas de aprobación distintas.</li>
+    <li>Separar conformidad y riesgo hace el informe defendible.</li>
+    <li>Las listas de cobertura son criterio: lo que no está en la lista no se revisa.</li>
+    <li>El examen también se valida: un enunciado ambiguo prueba el routing, no la skill.</li>
+    <li>Aceptar un riesgo no es resolverlo, y quien acepta lo crítico no puede ser quien tiene prisa por lanzar.</li>
+  </ul>
+  <div class="note"><b>En una frase.</b> «Al juntar dos agentes descubrí que hablaban idiomas distintos. Unifiqué la escala, pero no el criterio: en accesibilidad un fallo A/AA suspende siempre; en usabilidad, un problema moderado aprueba con observaciones. Y separé lo que es WCAG de lo que es riesgo de negocio, para que el informe se pueda defender.»</div>
+</section>
+
+<section id="aprendizajes">
+  <p class="eyebrow">Aprendizajes</p>
+  <h2>Lo que me llevo</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Aprendizaje</th><th>Qué hago a partir de ahora</th></tr></thead>
+    <tbody>
+      <tr><td>Un agente solo es tan bueno como el criterio que lleva escrito</td><td>Escribo mis decisiones como reglas comprobables, no como intenciones</td></tr>
+      <tr><td>Sin hoja de respuestas no sé si funciona</td><td>Preparo los exámenes antes de probar</td></tr>
+      <tr><td>La IA reutiliza lo que encuentra cerca</td><td>Sesión nueva por prueba y una regla de independencia en CLAUDE.md</td></tr>
+      <tr><td>Calcular es mejor que estimar</td><td>Un script para todo lo que se puede medir, como el contraste</td></tr>
+      <tr><td>Lo que no se puede verificar se dice</td><td>Una sección fija "No verificable" y un veredicto propio para la falta de evidencia</td></tr>
+      <tr><td>Hay que probar también lo negativo</td><td>Un caso en el que el agente no debe activarse</td></tr>
+      <tr><td>Versionar como un design system da trazabilidad</td><td>Versión, CHANGELOG y commit en cada cambio de criterio</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="chuleta">
+  <p class="eyebrow">Chuleta</p>
+  <h2>Comandos que he usado</h2>
+  <p class="intro">Todos en la terminal de VS Code, dentro de la carpeta <code>01 Design Agents</code>. Copia sin el símbolo <code>❯</code>.</p>
+  <h3>Abrir el equipo de agentes</h3>
+  <pre class="cmd">claude --plugin-dir ./plugins/design-team</pre>
+  <h3>Pedir una auditoría y guardarla</h3>
+  <pre class="cmd">Revisa la accesibilidad de demo/pantalla-firma.html
+Guarda tu informe completo, tal cual, en entregables/pruebas/caso-A.md</pre>
+  <h3>Cerrar la sesión</h3>
+  <pre class="cmd">/exit</pre>
+  <h3>Ver y guardar cambios con git</h3>
+  <pre class="cmd">git log --oneline -3
+git add -A &amp;&amp; git commit -m "Mensaje claro del cambio"</pre>
+  <h3>Ver un archivo Markdown con formato en VS Code</h3>
+  <pre class="cmd">Cmd + Shift + V</pre>
+</section>
+
+<footer>Cuaderno de trabajo de Francia · Proyecto Design Agents · actualizado el 23 de octubre de 2026. Banco Lumen es un banco ficticio.</footer>
+</main>
+</div>

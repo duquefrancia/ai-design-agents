@@ -1,0 +1,8 @@
+{
+  "name": "design-team",
+  "version": "0.8.0",
+  "description": "Edición pública (derivada de la 0.8.0): equipo de agentes de diseño de producto para entornos regulados. Incluye el orquestador, la auditoría de accesibilidad WCAG 2.2 AA y la evaluación heurística con Leyes de UX.",
+  "author": {
+    "name": "Francia"
+  }
+}

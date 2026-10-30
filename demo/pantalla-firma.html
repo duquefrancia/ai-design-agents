@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Pantalla de demo. Banco Lumen es un banco ficticio. -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Firma</title>
+<style>
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f5f7;color:#222}
+  .top{position:sticky;top:0;background:#0b3d6e;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;height:56px;box-sizing:border-box}
+  .top .icon-btn{background:none;border:0;color:#fff;font-size:20px;width:20px;height:20px;padding:0;cursor:pointer}
+  .top span{font-weight:600}
+  main{padding:20px 16px;max-width:420px;margin:0 auto}
+  .box{background:#fff;border-radius:10px;padding:18px}
+  h2{font-size:18px;margin:0 0 6px}
+  .help{color:#b4b4b4;font-size:13px;margin:0 0 16px}
+  .ref{font-size:13px;color:#555;margin-bottom:16px}
+  input.code{width:100%;box-sizing:border-box;font-size:22px;letter-spacing:6px;padding:10px;border:1px solid #e3e3e3;border-radius:6px;outline:none}
+  input.code.err{border-color:#e53935}
+  .timer{font-size:12px;color:#999;margin-top:8px}
+  .error{color:#e53935;font-size:12px;margin-top:6px}
+  .btn{display:block;width:100%;margin-top:22px;background:#0b3d6e;color:#fff;border:0;border-radius:8px;padding:14px;font-size:16px;cursor:pointer}
+  .link{display:block;text-align:center;margin-top:14px;font-size:12px;color:#8aa4c0}
+</style>
+</head>
+<body>
+  <div class="top">
+    <button class="icon-btn" onclick="history.back()">&#8592;</button>
+    <span>Banco Lumen</span>
+  </div>
+  <main>
+    <div class="box">
+      <h2>Firma de operación</h2>
+      <p class="help">Introduce el código que te hemos enviado al móvil terminado en **47</p>
+      <div class="ref">Referencia de la operación: 2026101583749201746</div>
+      <input class="code err" type="text" maxlength="6" placeholder="······">
+      <div class="timer">El código caduca en 0:45</div>
+      <div class="error">Error 4012</div>
+      <button class="btn" onclick="this.textContent='Procesando...'">Firmar</button>
+      <a class="link" href="#">¿No has recibido el código?</a>
+    </div>
+  </main>
+</body>
+</html>

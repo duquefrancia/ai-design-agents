@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- Pantalla de demo. Banco Lumen es un banco ficticio. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transferencia realizada · Banco Lumen</title>
+<style>
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:#ffffff;color:#1c1b19;font-size:16px;line-height:1.5}
+  header{background:#0b3d6e;color:#ffffff;padding:12px 16px}
+  header p{margin:0;font-weight:600}
+  main{padding:24px 16px;max-width:420px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 8px}
+  .estado{display:flex;gap:8px;align-items:flex-start;background:#e7f4ec;border:1px solid #1f6b3f;border-radius:8px;padding:12px;margin:0 0 20px}
+  .estado svg{flex:none;margin-top:2px}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0 0 24px}
+  dt{color:#595959}
+  dd{margin:0;font-weight:600}
+  .ref{letter-spacing:.04em}
+  a,button{font:inherit}
+  .btn{display:block;width:100%;min-height:48px;background:#0b3d6e;color:#ffffff;border:0;border-radius:8px;padding:12px;font-size:16px;cursor:pointer}
+  .link{display:inline-block;min-height:44px;line-height:44px;color:#0b3d6e;text-decoration:underline;margin-top:12px}
+  .btn:focus-visible,.link:focus-visible{outline:3px solid #0b3d6e;outline-offset:3px}
+</style>
+</head>
+<body>
+  <header>
+    <p>Banco Lumen</p>
+  </header>
+  <main>
+    <h1>Transferencia realizada</h1>
+    <div class="estado" role="status">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="10" fill="#1f6b3f"/><path d="M5 10.5l3 3 7-7" stroke="#ffffff" stroke-width="2" fill="none"/></svg>
+      <p style="margin:0">Hemos enviado 250,00 € a Laura Martín. El dinero llegará hoy.</p>
+    </div>
+    <h2 style="font-size:18px;margin:0 0 12px">Resumen de la operación</h2>
+    <dl>
+      <dt>Importe</dt><dd>250,00 €</dd>
+      <dt>Destinatario</dt><dd>Laura Martín</dd>
+      <dt>Cuenta de destino</dt><dd>Terminada en 4821</dd>
+      <dt>Concepto</dt><dd>Alquiler octubre</dd>
+      <dt>Fecha</dt><dd>16 de octubre de 2026</dd>
+      <dt>Referencia</dt><dd class="ref">2026 1016 8374 9201</dd>
+    </dl>
+    <button class="btn" type="button">Volver al inicio</button>
+    <a class="link" href="justificante-2026-1016.pdf" download>Descargar justificante (PDF, 40 KB)</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Secretos: nunca en git
+.env
+.env.*
+*.pem
+*.key
+*.p12
+.mcp.json
+**/secrets*
+**/credentials*
+
+# Trabajo local
+_respaldo-*/
+_to_delete/
+*.log
+.claude/settings.local.json
