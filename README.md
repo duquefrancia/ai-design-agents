@@ -113,7 +113,9 @@ Two exams turned out to be ambiguous. I corrected the exams and re-ran them, rat
 
 🎬 **Orchestrator demo (55 s)**: plan → human sign-off → refusal to accept a risk without the required data.
 
-<!-- VIDEO: drag the short demo video here -->
+
+https://github.com/user-attachments/assets/11aee6d2-32cf-4f9b-b94d-342bb9d33268
+
 
 The three screens evaluated (seeded with problems, correct, justified security) are in [`demo/`](demo), with [screenshots](demo/capturas).
 
